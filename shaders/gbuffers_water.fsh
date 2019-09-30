@@ -24,7 +24,7 @@ vec3 get_main_light_color() {
 }
 
 void main() {
-    vec4 texture_color = texture2D(texture, fs_in.coords.st);
+    vec4 texture_color = texture2D(texture, fs_in.coords.xy);
     vec3 color = texture_color.rgb * fs_in.vertex_color.rgb;
     float alpha = texture_color.a * fs_in.vertex_color.a;
 
@@ -33,7 +33,7 @@ void main() {
     const vec3 main_light_color = get_main_light_color();
     const vec3 main_light = main_light_color * main_light_strength;
 
-    const vec2 other_light_texcoord = fs_in.coords.pq / vec2(255.0, 2048);
+    const vec2 other_light_texcoord = fs_in.coords.zw / vec2(255.0, 2048);
     const vec3 other_light = texture2D(lightmap, other_light_texcoord).rgb;
 
     const vec3 incoming_diffuse = vec3(main_light + other_light);

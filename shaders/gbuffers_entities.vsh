@@ -14,7 +14,7 @@ out VS_OUT {
 
 void main() {
     vs_out.normal = gl_NormalMatrix * gl_Normal.xyz;
-    vs_out.texcoord = gl_MultiTexCoord0.st;
+    vs_out.texcoord = gl_MultiTexCoord0.xy;
 
     gl_Position = ftransform();
 }

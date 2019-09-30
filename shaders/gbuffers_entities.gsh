@@ -1,10 +1,9 @@
 #version 450 compatibility
 
-// Layer size shouldn't be longer than 0.005
-// Adjust these accordingly
+#define FUR_LENGTH 0.005
+#define NUM_LAYERS 25
 
-#define FUR_LENGTH 0.025
-#define NUM_LAYERS 20
+const float distance_between_layers = FUR_LENGTH / NUM_LAYERS;
 
 layout(triangles) in;
 layout(triangle_strip, max_vertices = NUM_LAYERS * 3) out;
@@ -31,7 +30,7 @@ void emit_input_mesh() {
     for(int i = 0; i < gl_in.length(); i++) {
         gs_out.normal = gs_in[i].normal;
         gs_out.texcoord = gs_in[i].texcoord;
-        gs_out.normalized_offset = 0;
+        gs_out.normalized_offset = 1;
 
         gl_Position = gl_in[i].gl_Position;
         EmitVertex();
@@ -57,7 +56,8 @@ void emit_fur_layer(in float offset) {
 
         const vec3 world_space_normal = mat3(gbufferModelViewInverse) * gs_in[i].normal;
 
-        const vec3 fur_layer_offset = world_space_normal * offset;
+        // Bring further away layers closer so we don't get so many visual artifacts
+        const vec3 fur_layer_offset = world_space_normal * sqrt(FUR_LENGTH - offset);
         
         vec4 fur_layer_position = vec4(fur_layer_offset, 0.0) + world_pos;
 
@@ -72,8 +72,6 @@ void emit_fur_layer(in float offset) {
 
 void main() {
     emit_input_mesh();
-
-    const float distance_between_layers = FUR_LENGTH / NUM_LAYERS;
 
     for(int i = 0; i < NUM_LAYERS; i++) {
         const float layer_offset = i * distance_between_layers;
