@@ -15,6 +15,8 @@ uniform mat4 gbufferProjection;
 uniform mat4 gbufferModelViewInverse; 
 uniform mat4 gbufferProjectionInverse;
 
+uniform sampler2D noisetex;
+
 in VS_OUT {
     vec3 normal;
     vec2 texcoord;
@@ -23,7 +25,7 @@ in VS_OUT {
 out GS_OUT {
     vec3 normal;
     vec2 texcoord;
-    flat int is_fur;
+    float fur_length;
 } gs_out;
 
 /// Emits the original primitive
@@ -31,7 +33,7 @@ void emit_input_mesh() {
     for(int i = 0; i < gl_in.length(); i++) {
         gs_out.normal = gs_in[i].normal;
         gs_out.texcoord = gs_in[i].texcoord;
-        gs_out.is_fur = 0;
+        gs_out.fur_length = 1;
 
         gl_Position = gl_in[i].gl_Position;
         EmitVertex();
@@ -45,7 +47,7 @@ void emit_fur_layer(in float offset) {
     for(int i = 0; i < gl_in.length(); i++) {
         gs_out.normal = gs_in[i].normal;
         gs_out.texcoord = gs_in[i].texcoord;
-        gs_out.is_fur = 1;
+        gs_out.fur_length = texture2D(noisetex, gs_in[i].texcoord * 3.14159).r;
 
         // Okay so we have to send the vertex to us in clip space, then untransform it into world space, because the 
         // shaders mod is really fucking stupid and doesn't know what a view matrix is so there's actually no way I can
